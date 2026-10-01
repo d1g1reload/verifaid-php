@@ -1,6 +1,6 @@
 {
     "name": "verifaid/verifaid-php",
-    "description": "SDK PHP resmi VerifAID untuk OCR e-KTP, SIM, NPWP, BPJS, dan Kartu Keluarga.",
+    "description": "Official VerifAID PHP SDK for extracting data from Indonesian identity documents: e-KTP, SIM, NPWP, BPJS, and Kartu Keluarga.",
     "type": "library",
     "keywords": [
         "verifaid",
