@@ -22,7 +22,7 @@ use Verifaid\Resource\Ocr;
  */
 final class Client
 {
-    public const VERSION = '1.0.0';
+    public const VERSION = '1.0.1';
 
     public const DEFAULT_BASE_URL = 'https://verifaid.my.id/api/v1/';
 

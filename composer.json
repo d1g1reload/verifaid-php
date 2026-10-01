@@ -20,12 +20,12 @@
     "authors": [
         {
             "name": "VerifAID",
-            "email": "halo@verifaid.my.id",
+            "email": "dgireloadpay@gmail.com",
             "homepage": "https://verifaid.my.id"
         }
     ],
     "support": {
-        "email": "halo@verifaid.my.id",
+        "email": "dgireloadpay@gmail.com",
         "issues": "https://github.com/d1g1reload/verifaid-php/issues",
         "source": "https://github.com/d1g1reload/verifaid-php",
         "docs": "https://verifaid.my.id/docs/api"
