@@ -13,7 +13,6 @@ use Verifaid\Http\Response;
 use Verifaid\Http\TransportInterface;
 use Verifaid\Resource\H2h;
 use Verifaid\Resource\Ocr;
-use Verifaid\Resource\Payment;
 
 /**
  * Titik masuk SDK VerifAID.
@@ -31,17 +30,12 @@ final class Client
         'base_url'        => self::DEFAULT_BASE_URL,
         'timeout'         => 120,
         'connect_timeout' => 10,
-        'environment'     => null,
         'transport'       => null,
     ];
-
-    private const ENVIRONMENTS = ['sandbox', 'production'];
 
     private string $apiKey;
 
     private string $baseUrl;
-
-    private ?string $environment;
 
     private TransportInterface $transport;
 
@@ -49,16 +43,12 @@ final class Client
 
     private ?H2h $h2h = null;
 
-    private ?Payment $payment = null;
-
     /**
-     * @param string $apiKey API key dari dashboard VerifAID: sv_live_... (OCR),
-     *                       sv_h2h_... (H2H), SB-Mid-... atau PR-Mid-... (Payment Gateway).
+     * @param string $apiKey API key dari dashboard VerifAID: sv_live_... (OCR) atau sv_h2h_... (H2H).
      * @param array{
      *     base_url?: string,
      *     timeout?: int|float,
      *     connect_timeout?: int|float,
-     *     environment?: 'sandbox'|'production'|null,
      *     transport?: TransportInterface|null
      * } $options
      */
@@ -80,14 +70,6 @@ final class Client
 
         $options = array_merge(self::DEFAULT_OPTIONS, $options);
 
-        $environment = $options['environment'];
-        if ($environment !== null) {
-            $environment = strtolower((string) $environment);
-            if (!in_array($environment, self::ENVIRONMENTS, true)) {
-                throw new InvalidArgumentException('Opsi "environment" harus "sandbox" atau "production".');
-            }
-        }
-
         $transport = $options['transport'];
         if ($transport !== null && !$transport instanceof TransportInterface) {
             throw new InvalidArgumentException(sprintf('Opsi "transport" harus mengimplementasikan %s.', TransportInterface::class));
@@ -95,7 +77,6 @@ final class Client
 
         $this->apiKey = $apiKey;
         $this->baseUrl = rtrim((string) $options['base_url'], '/') . '/';
-        $this->environment = $environment;
         $this->transport = $transport ?? new CurlTransport((float) $options['timeout'], (float) $options['connect_timeout']);
     }
 
@@ -113,36 +94,6 @@ final class Client
     public function h2h(): H2h
     {
         return $this->h2h ??= new H2h($this);
-    }
-
-    /**
-     * Payment Gateway QRIS, Virtual Account, saldo, dan penarikan dana (SB-Mid-... / PR-Mid-...).
-     */
-    public function payment(): Payment
-    {
-        return $this->payment ??= new Payment($this);
-    }
-
-    /**
-     * Environment Payment Gateway: dari opsi "environment", atau ditebak dari prefix API key.
-     *
-     * @return 'sandbox'|'production'|null null bila tidak bisa ditentukan.
-     */
-    public function environment(): ?string
-    {
-        if ($this->environment !== null) {
-            return $this->environment;
-        }
-
-        if (strpos($this->apiKey, 'SB-Mid-') === 0) {
-            return 'sandbox';
-        }
-
-        if (strpos($this->apiKey, 'PR-Mid-') === 0) {
-            return 'production';
-        }
-
-        return null;
     }
 
     public function getBaseUrl(): string

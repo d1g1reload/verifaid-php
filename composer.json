@@ -1,6 +1,6 @@
 {
     "name": "verifaid/verifaid-php",
-    "description": "SDK PHP resmi VerifAID: OCR KTP, SIM, NPWP, BPJS, dan Kartu Keluarga, serta Payment Gateway QRIS dan Virtual Account.",
+    "description": "SDK PHP resmi VerifAID untuk OCR e-KTP, SIM, NPWP, BPJS, dan Kartu Keluarga.",
     "type": "library",
     "keywords": [
         "verifaid",
@@ -13,10 +13,7 @@
         "bpjs",
         "kyc",
         "ekyc",
-        "indonesia",
-        "qris",
-        "virtual-account",
-        "payment-gateway"
+        "indonesia"
     ],
     "homepage": "https://verifaid.my.id",
     "license": "MIT",

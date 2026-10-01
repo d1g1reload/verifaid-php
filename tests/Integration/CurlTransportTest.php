@@ -102,22 +102,19 @@ final class CurlTransportTest extends TestCase
 
     public function testSendsJsonBody(): void
     {
-        $data = $this->client('SB-Mid-test')->payment()->createVa('INV-001', 25000, 'BRIVA');
+        $data = $this->client()->request('POST', 'custom/endpoint', ['nama' => 'Budi', 'jumlah' => 3])->getData();
 
-        $this->assertSame('/api/v1/sandbox/va', $data['path']);
+        $this->assertSame('/api/v1/custom/endpoint', $data['path']);
         $this->assertSame('application/json', $data['content_type']);
-        $this->assertSame(
-            ['merchant_order_id' => 'INV-001', 'amount' => 25000, 'bank_code' => 'BRIVA'],
-            json_decode($data['body'], true)
-        );
+        $this->assertSame(['nama' => 'Budi', 'jumlah' => 3], json_decode($data['body'], true));
     }
 
     public function testSendsGetWithoutBody(): void
     {
-        $data = $this->client('PR-Mid-test')->payment()->balance();
+        $data = $this->client()->request('GET', 'custom/endpoint')->getData();
 
         $this->assertSame('GET', $data['method']);
-        $this->assertSame('/api/v1/production/balance', $data['path']);
+        $this->assertSame('/api/v1/custom/endpoint', $data['path']);
         $this->assertSame('', $data['body']);
     }
 

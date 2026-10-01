@@ -69,8 +69,7 @@ class ApiException extends RuntimeException implements VerifaidException
     }
 
     /**
-     * Data tambahan yang menyertai error, bila ada. Contoh: detail penolakan
-     * dari payment gateway pada error 422.
+     * Data tambahan yang menyertai error, bila ada.
      *
      * @return array<string, mixed>
      */

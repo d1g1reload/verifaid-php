@@ -5,7 +5,7 @@
 [![PHP Version](https://img.shields.io/packagist/php-v/verifaid/verifaid-php.svg)](https://packagist.org/packages/verifaid/verifaid-php)
 [![License](https://img.shields.io/packagist/l/verifaid/verifaid-php.svg)](LICENSE)
 
-SDK PHP resmi untuk [VerifAID](https://verifaid.my.id). Ekstrak data e-KTP, SIM, NPWP, BPJS, dan Kartu Keluarga dari foto dalam satu baris kode, serta terima pembayaran QRIS dan Virtual Account.
+SDK PHP resmi untuk [VerifAID](https://verifaid.my.id). Ekstrak data e-KTP, SIM, NPWP, BPJS, dan Kartu Keluarga dari foto dalam satu baris kode.
 
 ```php
 $verifaid = new \Verifaid\Client('sv_live_xxx');
@@ -37,8 +37,6 @@ Buat API key di [dashboard VerifAID](https://verifaid.my.id). Jenis key menentuk
 | --- | --- | --- |
 | `sv_live_` | OCR self-service, kuota dari top-up | `$verifaid->ocr()` |
 | `sv_h2h_` | OCR Host-to-Host untuk klien enterprise | `$verifaid->h2h()` |
-| `SB-Mid-` | Payment Gateway, sandbox | `$verifaid->payment()` |
-| `PR-Mid-` | Payment Gateway, production (uang riil) | `$verifaid->payment()` |
 
 Simpan API key di environment variable, jangan di kode:
 
@@ -120,89 +118,6 @@ Jenis dokumen yang bisa dipakai bergantung pada paket:
 
 Meminta dokumen di luar paket menghasilkan `PermissionDeniedException`. Kuota H2H hanya terpotong bila ekstraksi berhasil.
 
-## Payment Gateway
-
-Gunakan key `SB-Mid-` untuk uji coba dan `PR-Mid-` untuk transaksi riil. SDK memilih endpoint sandbox atau production otomatis dari prefix key.
-
-### Membuat tagihan
-
-```php
-$verifaid = new \Verifaid\Client('SB-Mid-xxx');
-
-// QRIS
-$tagihan = $verifaid->payment()->createQris('INV-2026-0001', 25000);
-echo $tagihan['payment_url'];  // arahkan pelanggan ke halaman ini
-
-// Virtual Account
-$tagihan = $verifaid->payment()->createVa('INV-2026-0002', 150000, 'BRIVA');
-echo $tagihan['va_number'];
-```
-
-`merchant_order_id` adalah ID pesanan dari sistem Anda dan akan dikirim balik saat pembayaran lunas. Nominal minimal Rp 10.000.
-
-### Riwayat transaksi dan saldo
-
-```php
-$riwayat = $verifaid->payment()->transactions([
-    'status'     => 'success',     // pending, success, failed, expired
-    'start_date' => '2026-09-01',  // start_date dan end_date harus diisi berdua
-    'end_date'   => '2026-09-30',
-    'page'       => 1,
-    'limit'      => 50,            // maksimal 100
-]);
-
-foreach ($riwayat['records'] as $trx) {
-    echo $trx['merchant_order_id'] . ': ' . $trx['status'] . PHP_EOL;
-}
-
-$saldo = $verifaid->payment()->balance();
-echo $saldo['available_balance'];
-```
-
-### Penarikan dana
-
-Hanya bisa dengan key production. Minimal Rp 50.000; saldo langsung dipotong, dan biaya transfer diambil dari nominal tersebut.
-
-```php
-$verifaid = new \Verifaid\Client('PR-Mid-xxx');
-
-$penarikan = $verifaid->payment()->withdraw(500000, 'BCA', '1234567890', 'BUDI SANTOSO');
-echo $penarikan['reference_code'];
-
-$daftar = $verifaid->payment()->withdrawals(['status' => 'pending']);
-```
-
-### Notifikasi pembayaran (webhook)
-
-Saat tagihan lunas, VerifAID mengirim `POST` JSON ke Callback URL yang Anda atur di dashboard:
-
-```json
-{
-    "merchant_order_id": "INV-2026-0001",
-    "amount": 25000,
-    "net_amount": 24825,
-    "status": "success",
-    "environment": "sandbox",
-    "paid_at": "2026-10-01 14:30:00"
-}
-```
-
-Contoh penerima webhook:
-
-```php
-$payload = json_decode(file_get_contents('php://input'), true);
-
-$pesanan = Pesanan::where('kode', $payload['merchant_order_id'])->first();
-
-if ($pesanan && $pesanan->total === $payload['amount'] && $pesanan->status === 'menunggu') {
-    $pesanan->tandaiLunas();
-}
-
-http_response_code(200);
-```
-
-Untuk keamanan, pastikan `merchant_order_id` dan `amount` cocok dengan data di sistem Anda sebelum memproses pesanan, dan konfirmasi statusnya lewat `transactions()` untuk transaksi bernilai besar.
-
 ## Menangani error
 
 Setiap error dari API dilempar sebagai exception. Pesannya diambil dari respons server, dan kode exception berisi status HTTP.
@@ -230,12 +145,12 @@ try {
 
 | Exception | Kapan terjadi |
 | --- | --- |
-| `BadRequestException` (400) | Parameter tidak lengkap atau tidak valid |
+| `BadRequestException` (400) | Gambar tidak terkirim atau formatnya tidak didukung server |
 | `AuthenticationException` (401) | API key salah atau tidak ditemukan |
 | `QuotaExceededException` (402) | Kuota hit habis |
-| `PermissionDeniedException` (403) | Key/akun dinonaktifkan, dokumen di luar paket H2H, atau key sandbox dipakai di production |
+| `PermissionDeniedException` (403) | Key/akun dinonaktifkan atau dokumen di luar paket H2H |
 | `NotFoundException` (404) | Endpoint tidak ada, biasanya karena `base_url` keliru |
-| `UnprocessableEntityException` (422) | OCR: gambar buram atau jenis dokumen salah. Payment: tagihan ditolak payment gateway |
+| `UnprocessableEntityException` (422) | Gambar terlalu buram, atau dokumen bukan jenis yang diminta |
 | `RateLimitException` (429) | Batas request per menit terlampaui; lihat `getRetryAfter()` |
 | `ServerException` (5xx) | Gangguan di server VerifAID |
 | `ConnectionException` | Server tidak bisa dihubungi (DNS, timeout, SSL) |
@@ -252,7 +167,6 @@ $verifaid = new \Verifaid\Client('sv_live_xxx', [
     'timeout'         => 120,        // detik, total per request
     'connect_timeout' => 10,         // detik, untuk membuka koneksi
     'base_url'        => 'https://verifaid.my.id/api/v1/',
-    'environment'     => 'sandbox',  // hanya untuk Payment, bila tidak ingin ditebak dari prefix key
 ]);
 ```
 
@@ -261,7 +175,6 @@ $verifaid = new \Verifaid\Client('sv_live_xxx', [
 | `timeout` | `120` | OCR dengan AI bisa butuh puluhan detik, jadi jangan terlalu kecil |
 | `connect_timeout` | `10` | |
 | `base_url` | `https://verifaid.my.id/api/v1/` | |
-| `environment` | dari prefix key | `sandbox` atau `production` |
 | `transport` | `CurlTransport` | Implementasi `Verifaid\Http\TransportInterface`, misalnya untuk testing |
 
 ## Contoh di Laravel

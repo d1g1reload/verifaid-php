@@ -10,7 +10,6 @@ mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
 - OCR e-KTP, SIM, NPWP, BPJS, dan Kartu Keluarga untuk API key self-service (`ocr()`).
 - OCR dan cek kuota untuk klien Host-to-Host (`h2h()`).
-- Payment Gateway: tagihan QRIS dan Virtual Account, riwayat transaksi, saldo, dan penarikan dana (`payment()`), dengan pemilihan sandbox/production otomatis dari prefix API key.
 - Input gambar dari path, `SplFileInfo` (termasuk UploadedFile Laravel/Symfony), isi file mentah, dan base64.
 - Exception terpisah untuk setiap jenis error API, termasuk `getRetryAfter()` untuk rate limit.
 

@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Verifaid\Exception;
 
 /**
- * HTTP 422: request valid tetapi tidak bisa diproses. Untuk OCR: gambar terlalu
- * buram, atau dokumen bukan jenis yang diminta. Untuk Payment Gateway: tagihan
- * ditolak oleh payment gateway (detailnya ada di getErrorData()).
+ * HTTP 422: gambar tidak bisa diproses, karena terlalu buram atau dokumennya
+ * bukan jenis yang diminta. Minta pengguna mengunggah foto ulang.
  */
 final class UnprocessableEntityException extends ApiException
 {

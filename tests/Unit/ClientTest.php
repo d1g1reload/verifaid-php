@@ -27,13 +27,6 @@ final class ClientTest extends TestCase
         new Client('sv_live_x', ['baseUrl' => 'https://example.com']);
     }
 
-    public function testRejectsInvalidEnvironment(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        new Client('sv_live_x', ['environment' => 'staging']);
-    }
-
     public function testRejectsInvalidTransport(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -98,35 +91,11 @@ final class ClientTest extends TestCase
         $this->assertSame(['a' => 1], $transport->lastRequest()->getJson());
     }
 
-    /**
-     * @dataProvider environmentProvider
-     *
-     * @param array<string, mixed> $options
-     */
-    public function testDetectsEnvironment(string $apiKey, array $options, ?string $expected): void
-    {
-        $this->assertSame($expected, (new Client($apiKey, $options))->environment());
-    }
-
-    /**
-     * @return array<string, array{string, array<string, mixed>, string|null}>
-     */
-    public function environmentProvider(): array
-    {
-        return [
-            'kunci sandbox'          => ['SB-Mid-abc', [], 'sandbox'],
-            'kunci production'       => ['PR-Mid-abc', [], 'production'],
-            'kunci OCR'              => ['sv_live_abc', [], null],
-            'opsi mengalahkan kunci' => ['SB-Mid-abc', ['environment' => 'Production'], 'production'],
-        ];
-    }
-
     public function testResourcesAreReused(): void
     {
         $client = new Client('sv_live_x');
 
         $this->assertSame($client->ocr(), $client->ocr());
         $this->assertSame($client->h2h(), $client->h2h());
-        $this->assertSame($client->payment(), $client->payment());
     }
 }
