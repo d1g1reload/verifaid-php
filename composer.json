@@ -1,0 +1,61 @@
+{
+    "name": "verifaid/verifaid-php",
+    "description": "SDK PHP resmi VerifAID: OCR KTP, SIM, NPWP, BPJS, dan Kartu Keluarga, serta Payment Gateway QRIS dan Virtual Account.",
+    "type": "library",
+    "keywords": [
+        "verifaid",
+        "ocr",
+        "ktp",
+        "e-ktp",
+        "kartu-keluarga",
+        "npwp",
+        "sim",
+        "bpjs",
+        "kyc",
+        "ekyc",
+        "indonesia",
+        "qris",
+        "virtual-account",
+        "payment-gateway"
+    ],
+    "homepage": "https://verifaid.my.id",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "VerifAID",
+            "email": "halo@verifaid.my.id",
+            "homepage": "https://verifaid.my.id"
+        }
+    ],
+    "support": {
+        "email": "halo@verifaid.my.id",
+        "issues": "https://github.com/d1g1reload/verifaid-php/issues",
+        "source": "https://github.com/d1g1reload/verifaid-php",
+        "docs": "https://verifaid.my.id/docs/api"
+    },
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Verifaid\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Verifaid\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable"
+}
