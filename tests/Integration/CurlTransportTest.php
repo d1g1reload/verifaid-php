@@ -148,7 +148,7 @@ final class CurlTransportTest extends TestCase
 
     public function testThrowsConnectionExceptionWhenServerIsDown(): void
     {
-        $client = new Client('sv_live_test', [
+        $client = new Client('sv_h2h_test', [
             'base_url'        => 'http://127.0.0.1:' . self::findFreePort() . '/api/v1/',
             'connect_timeout' => 2,
         ]);

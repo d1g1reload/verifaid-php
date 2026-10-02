@@ -22,9 +22,14 @@ use Verifaid\Resource\Ocr;
  */
 final class Client
 {
-    public const VERSION = '1.0.1';
+    public const VERSION = '1.0.2';
 
     public const DEFAULT_BASE_URL = 'https://verifaid.my.id/api/v1/';
+
+    private const KEY_TYPES = [
+        'ocr' => ['prefix' => 'sv_live_', 'label' => 'OCR self-service'],
+        'h2h' => ['prefix' => 'sv_h2h_', 'label' => 'Host-to-Host'],
+    ];
 
     private const DEFAULT_OPTIONS = [
         'base_url'        => self::DEFAULT_BASE_URL,
@@ -44,7 +49,7 @@ final class Client
     private ?H2h $h2h = null;
 
     /**
-     * @param string $apiKey API key dari dashboard VerifAID: sv_live_... (OCR) atau sv_h2h_... (H2H).
+     * @param string $apiKey API key VerifAID: sv_live_... (OCR, dibuat di dashboard) atau sv_h2h_... (H2H, dikirim lewat email).
      * @param array{
      *     base_url?: string,
      *     timeout?: int|float,
@@ -82,17 +87,25 @@ final class Client
 
     /**
      * OCR dokumen untuk API key self-service (sv_live_...).
+     *
+     * @throws InvalidArgumentException Bila API key adalah key H2H (sv_h2h_...).
      */
     public function ocr(): Ocr
     {
+        $this->assertKeyMatches('ocr');
+
         return $this->ocr ??= new Ocr($this);
     }
 
     /**
      * OCR dokumen dan cek kuota untuk klien Host-to-Host (sv_h2h_...).
+     *
+     * @throws InvalidArgumentException Bila API key adalah key self-service (sv_live_...).
      */
     public function h2h(): H2h
     {
+        $this->assertKeyMatches('h2h');
+
         return $this->h2h ??= new H2h($this);
     }
 
@@ -133,5 +146,22 @@ final class Client
         }
 
         return $response;
+    }
+
+    // Tiap jenis key hanya berlaku di endpoint-nya sendiri, dan server membalas key yang salah tempat
+    // dengan 401 "API key tidak valid" biasa. Gagal di sini langsung menyebutkan resource yang benar.
+    private function assertKeyMatches(string $resource): void
+    {
+        foreach (self::KEY_TYPES as $other => $type) {
+            if ($other !== $resource && strpos($this->apiKey, $type['prefix']) === 0) {
+                throw new InvalidArgumentException(sprintf(
+                    'API key %s... adalah key %s. Gunakan $verifaid->%s(), bukan $verifaid->%s().',
+                    $type['prefix'],
+                    $type['label'],
+                    $other,
+                    $resource
+                ));
+            }
+        }
     }
 }

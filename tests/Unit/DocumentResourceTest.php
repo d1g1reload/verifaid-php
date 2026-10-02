@@ -32,7 +32,7 @@ final class DocumentResourceTest extends TestCase
     {
         $data = ['nik' => '3201010101010001', 'full_name' => 'BUDI SANTOSO'];
         $transport = (new FakeTransport())->pushSuccess($data);
-        $client = new Client('sv_live_x', ['transport' => $transport]);
+        $client = new Client($resource === 'h2h' ? 'sv_h2h_x' : 'sv_live_x', ['transport' => $transport]);
         $path = $this->tempImage(Images::jpeg());
 
         /** @var DocumentResource $api */

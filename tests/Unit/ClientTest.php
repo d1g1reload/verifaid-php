@@ -93,9 +93,34 @@ final class ClientTest extends TestCase
 
     public function testResourcesAreReused(): void
     {
-        $client = new Client('sv_live_x');
+        $ocrClient = new Client('sv_live_x');
+        $h2hClient = new Client('sv_h2h_x');
 
-        $this->assertSame($client->ocr(), $client->ocr());
-        $this->assertSame($client->h2h(), $client->h2h());
+        $this->assertSame($ocrClient->ocr(), $ocrClient->ocr());
+        $this->assertSame($h2hClient->h2h(), $h2hClient->h2h());
+    }
+
+    public function testOcrRejectsH2hKey(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Gunakan $verifaid->h2h(), bukan $verifaid->ocr()');
+
+        (new Client('sv_h2h_x'))->ocr();
+    }
+
+    public function testH2hRejectsSelfServiceKey(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Gunakan $verifaid->ocr(), bukan $verifaid->h2h()');
+
+        (new Client('sv_live_x'))->h2h();
+    }
+
+    public function testKeyWithUnknownPrefixIsAllowedOnBothResources(): void
+    {
+        $client = new Client('custom_key');
+
+        $this->assertNotNull($client->ocr());
+        $this->assertNotNull($client->h2h());
     }
 }

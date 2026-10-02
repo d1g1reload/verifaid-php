@@ -31,12 +31,14 @@ composer require verifaid/verifaid-php
 
 ## API key
 
-Buat API key di [dashboard VerifAID](https://verifaid.my.id). Jenis key menentukan layanan yang bisa dipakai:
+Jenis key menentukan layanan yang bisa dipakai:
 
-| Prefix key | Layanan | Dipakai lewat |
-| --- | --- | --- |
-| `sv_live_` | OCR self-service, kuota dari top-up | `$verifaid->ocr()` |
-| `sv_h2h_` | OCR Host-to-Host untuk klien enterprise | `$verifaid->h2h()` |
+| Prefix key | Layanan | Cara mendapatkan | Dipakai lewat |
+| --- | --- | --- | --- |
+| `sv_live_` | OCR self-service, kuota dari top-up | Dibuat sendiri di menu API Key [dashboard VerifAID](https://verifaid.my.id) | `$verifaid->ocr()` |
+| `sv_h2h_` | OCR Host-to-Host untuk klien enterprise | Dikirim tim VerifAID ke email Anda setelah invoice aktivasi lunas | `$verifaid->h2h()` |
+
+Setiap key hanya bekerja di resource-nya sendiri. Memanggil `ocr()` dengan key `sv_h2h_`, atau `h2h()` dengan key `sv_live_`, langsung melempar `InvalidArgumentException` sebelum request dikirim.
 
 Simpan API key di environment variable, jangan di kode:
 
@@ -96,7 +98,9 @@ Satu ekstraksi memotong satu hit. Gambar yang ditolak karena terlalu buram tidak
 
 ## Host-to-Host (H2H)
 
-Untuk klien enterprise dengan key `sv_h2h_`. Method-nya sama dengan OCR, ditambah cek kuota:
+Untuk klien enterprise dengan key `sv_h2h_`. Klien H2H tidak memakai dashboard: API key, dokumentasi integrasi, dan invoice dikirim lewat email oleh tim VerifAID, begitu juga top-up kuota dan upgrade paket. Hubungi [tim VerifAID](https://verifaid.my.id/h2h) untuk berlangganan.
+
+Method-nya sama dengan OCR, ditambah cek kuota:
 
 ```php
 $verifaid = new \Verifaid\Client('sv_h2h_xxx');
@@ -154,7 +158,7 @@ try {
 | `RateLimitException` (429) | Batas request per menit terlampaui; lihat `getRetryAfter()` |
 | `ServerException` (5xx) | Gangguan di server VerifAID |
 | `ConnectionException` | Server tidak bisa dihubungi (DNS, timeout, SSL) |
-| `InvalidArgumentException` | Input salah sebelum request dikirim, misalnya file tidak ada atau format gambar tidak didukung |
+| `InvalidArgumentException` | Input salah sebelum request dikirim, misalnya file tidak ada, format gambar tidak didukung, atau key dipakai di resource yang salah |
 
 Semua exception di atas mengimplementasikan `Verifaid\Exception\VerifaidException`. Exception dari API juga menyediakan `getStatusCode()`, `getErrorData()`, dan `getResponse()`.
 
